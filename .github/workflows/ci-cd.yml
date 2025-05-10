@@ -52,6 +52,8 @@ jobs:
     steps:
       # Step 1: Checkout the repository code, including submodules
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'  # Ensure submodules are checked out
 
       # Step 2: Set up Docker Buildx (for multi-platform support)
       - name: Set up Docker Buildx
