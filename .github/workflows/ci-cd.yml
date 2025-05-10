@@ -16,11 +16,17 @@ jobs:
     steps:
       # Step 1: Checkout the repository code
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'  # Ensure submodules are checked out
 
       # Step 2: Set up Node.js (version 18)
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
+      # # Add step to copy a test file for linting
+      # - name: Copy test file for linting
+      #   run: |
+      #     echo "var unusedVar = 42; console.log('Hello, world!');" > ./node-hello/test.js
 
       # Step 3: Install ESLint (latest version)
       - name: Install ESLint (latest)
@@ -33,6 +39,10 @@ jobs:
         run: |
           npx eslint './node-hello/*.js'  --config .eslintrc.js
         working-directory: .
+      #   # Optionally, remove the test file after linting
+      # - name: Clean up test file
+      #   run: |
+      #     rm ./node-hello/test.js
 
   build-and-push:
     # The build-and-push job depends on the completion of the lint job
