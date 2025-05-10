@@ -152,4 +152,4 @@ aws ec2 describe-network-interfaces --network-interface-ids <eni-xxxxxxxxxxxx> |
 ```
 
 Access the app on the URL:
-http://<Public-IP>:3000
+`http://<Public-IP>:3000`
