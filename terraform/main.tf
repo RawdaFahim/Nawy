@@ -17,7 +17,7 @@ data "aws_subnet" "default_public_subnet" {
 
   filter {
     name   = "availabilityZone"
-    values = ["us-east-1a"]  # Specify the availability zone you are using
+    values = [var.aws_az]  
   }
 
   filter {
@@ -123,7 +123,7 @@ resource "aws_ecs_task_definition" "web_app_task" {
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn  # Add this line
+  task_role_arn            = aws_iam_role.ecs_task_role.arn  
 
   container_definitions = jsonencode([{
     name      = "web-app-container"
@@ -134,7 +134,6 @@ resource "aws_ecs_task_definition" "web_app_task" {
     portMappings = [
       {
         containerPort = 3000
-        hostPort      = 3000
         protocol      = "tcp"
       }
     ]

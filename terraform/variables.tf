@@ -4,6 +4,11 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
 }
+variable "aws_az" {
+  description = "AZto deploy resources"
+  type        = string
+  default     = "us-east-1a"
+}
 
 variable "docker_image" {
   description = "Docker image URL for the web application"
