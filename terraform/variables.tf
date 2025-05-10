@@ -5,7 +5,7 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 variable "aws_az" {
-  description = "AZto deploy resources"
+  description = "AZ to deploy resources"
   type        = string
   default     = "us-east-1a"
 }

@@ -1,69 +1,63 @@
-  name: CI/CD Pipeline
+# CI/CD Pipeline Workflow
+# This workflow is triggered on `push` and `pull_request` events to the `main` branch.
 
-  on:
-    push:
-      branches: [main]
-    pull_request:
-      branches: [main]
+name: CI/CD Pipeline
 
-  jobs:
-    lint:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+on:
+  push:
+    branches: [main] # Trigger workflow on push to the main branch
+  pull_request:
+    branches: [main] # Trigger workflow on pull request to the main branch
 
-        - uses: actions/setup-node@v4
-          with:
-            node-version: '18'
+jobs:
+  lint:
+    # Lint job runs on the latest Ubuntu runner
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository code
+      - uses: actions/checkout@v4
 
-        - name: Install ESLint (latest)
-          run: |
-            npm install eslint@latest
-          working-directory: ./node-hello
+      # Step 2: Set up Node.js (version 18)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-        # Add step to copy a test file for linting
-        - name: Copy test file for linting
-          run: |
-            echo "var unusedVar = 42; console.log('Hello, world!');" > ./node-hello/test.js
+      # Step 3: Install ESLint (latest version)
+      - name: Install ESLint (latest)
+        run: |
+          npm install eslint@latest
+        working-directory: ./node-hello
 
-        - name: Run ESLint
-          run: |
-            npx eslint './node-hello/*.js'  --config .eslintrc.js
-          working-directory: .
+      # Step 4: Run ESLint to check for code quality issues
+      - name: Run ESLint
+        run: |
+          npx eslint './node-hello/*.js'  --config .eslintrc.js
+        working-directory: .
 
-        # Optionally, remove the test file after linting
-        - name: Clean up test file
-          run: |
-            rm ./node-hello/test.js
+  build-and-push:
+    # The build-and-push job depends on the completion of the lint job
+    needs: lint
+    runs-on: ubuntu-latest
+    environment: nawy-env  # Defines the environment for the deployment
+    steps:
+      # Step 1: Checkout the repository code, including submodules
+      - uses: actions/checkout@v4
 
-    build-and-push:
-      needs: lint
-      runs-on: ubuntu-latest
-      environment: nawy-env 
-      steps:
-        - uses: actions/checkout@v4
-        
-        - name: Checkout code with submodules
-          uses: actions/checkout@v4
-          with:
-            submodules: 'true'
+      # Step 2: Set up Docker Buildx (for multi-platform support)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-        # Step 2: Set up Docker Buildx (for multi-platform support)
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v2
+      # Step 3: Log in to Docker Hub using stored credentials
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }} # Docker Hub username stored in GitHub secrets
+          password: ${{ secrets.DOCKER_PASSWORD }} # Docker Hub password stored in GitHub secrets
 
-        - name: Log in to Docker Hub
-          uses: docker/login-action@v2
-          with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_PASSWORD }}
-
-        # Step 4: Build and push Docker image
-        - name: Build and push Docker image
-          uses: docker/build-push-action@v5
-          with:
-            context: .  # Use root directory as context
-            push: true
-            tags: ${{ secrets.DOCKER_USERNAME }}/node-hello:latest
-
-
+      # Step 4: Build and push the Docker image to Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .  # Use root directory as the build context
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/node-hello:latest  # Docker image tag
